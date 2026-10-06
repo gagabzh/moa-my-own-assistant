@@ -1,0 +1,33 @@
+# Configuration pour le skill planning-semaine
+# Copiez ce fichier en config.toml et ajustez les valeurs
+
+[notion]
+# ID de la base de données "Plannings Hebdomadaires"
+# Pour trouver cet ID :
+# 1. Ouvrez votre base Notion
+# 2. Copiez l'URL : https://www.notion.so/workspace/ID_BASE?v=...
+# 3. L'ID est la partie après le nom du workspace (32 caractères)
+weekly_plannings_database_id = ""
+
+# ID de la page parent pour les plannings (optionnel)
+# Si vous préférez sauvegarder dans une page plutôt qu'une base de données
+parent_page_id = "0f28e015f76949eeaf2985e10d4c64e3"  # Maison et Jardin par défaut
+
+# ID du planning type (déjà configuré)
+planning_type_page_id = "3eaeb7da605181a58e5fc7092116b872"
+
+[scheduled_tasks]
+# Configuration pour les scheduled tasks de Vibe Work
+# Heure du briefing quotidien (format HH:MM)
+briefing_time = "21:00"
+briefing_timezone = "Europe/Paris"
+
+# Nom de la scheduled task dans Vibe Work
+briefing_task_name = "Briefing quotidien - Planning"
+
+[fallback]
+# Utiliser le fallback local si Notion échoue
+use_local_fallback = true
+
+# Répertoire de sauvegarde locale (relatif à VIBE_HOME)
+local_plannings_dir = "plannings"
