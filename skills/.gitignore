@@ -1,0 +1,5 @@
+# Fichiers de configuration avec données personnelles
+config.json
+*.json
+!.gitignore
+!*.example.json
