@@ -1,0 +1,13 @@
+{
+  "notion_page_url": "https://app.notion.com/p/YOUR_PAGE_NAME-YOUR_NOTION_ID",
+  "notion_database_url": "https://app.notion.com/p/YOUR_NOTION_ID",
+  "notion_data_source_url": "collection://YOUR_NOTION_ID",
+  "workflow_order": [
+    "Pas commencé",
+    "À acheter",
+    "À assembler",
+    "À peindre",
+    "À socler",
+    "Terminé"
+  ]
+}
