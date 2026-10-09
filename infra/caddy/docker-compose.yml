@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy_data:/data
+      - ./caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - CADDY_DOCKER_PROXY_INIT: "true"
+      - CADDY_DOCKER_PROXY_NETWORK: "moa-network"
+    networks:
+      - moa-network
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  moa-network:
+    external: true
+    name: moa-network

@@ -5,3 +5,22 @@
 # Système
 .DS_Store
 Thumbs.db
+
+# IDE
+.idea/
+
+# Infrastructure - Fichiers de configuration sensibles
+infra/.env.global
+infra/*/.env.local
+
+# Infrastructure - Fichiers générés automatiquement
+infra/*/data/
+
+# Skills (code d'interaction - à déployer via update-vibe-skills.sh)
+# Les skills ne sont pas versionnées dans ce repo, elles sont gérées séparément
+# Voir AGENTS.md pour plus de détails
+task-manager/
+menu-semaine/
+planning-semaine/
+suivi-warhammer/
+liste-courses-notesnook/

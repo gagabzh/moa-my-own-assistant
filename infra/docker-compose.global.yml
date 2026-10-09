@@ -1,0 +1,261 @@
+version: '3.8'
+
+# =============================================================================
+# MOA - Stack Complète : Vikunja, BookStack, Directus, Forgejo
+# Réseau partagé : moa-network
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # CADDY - Reverse Proxy HTTPS
+  # ===========================================================================
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/caddy_data:/data
+      - ./caddy/caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - moa-network
+
+  # ===========================================================================
+  # VIKUNJA - Gestionnaire de tâches
+  # ===========================================================================
+  vikunja:
+    image: vikunja/vikunja:latest
+    container_name: vikunja
+    restart: unless-stopped
+    user: "1000:1000"
+    # Port désactivé : accessible uniquement via Caddy reverse proxy
+    # ports:
+    #   - "3456:3456"
+    volumes:
+      - ./vikunja/data/files:/app/vikunja/files
+    environment:
+      - VIKUNJA_SERVICE_SECRET=${VIKUNJA_SECRET:-changemeplease}
+      - VIKUNJA_SERVICE_PUBLICURL=${VIKUNJA_PUBLIC_URL:-https://vikunja.localhost}
+      - VIKUNJA_SERVICE_INTERFACESETTINGS_ENABLEOPENREGISTRATION=${VIKUNJA_ENABLE_OPEN_REGISTRATION:-false}
+      - VIKUNJA_DATABASE_TYPE=postgres
+      - VIKUNJA_DATABASE_HOST=vikunja-db
+      - VIKUNJA_DATABASE_PORT=5432
+      - VIKUNJA_DATABASE_USER=vikunja
+      - VIKUNJA_DATABASE_PASSWORD=${VIKUNJA_DB_PASSWORD:-vikunja}
+      - VIKUNJA_DATABASE_DATABASE=vikunja
+      - VIKUNJA_DATABASE_SSLMODE=disable
+    depends_on:
+      vikunja-db:
+        condition: service_healthy
+    networks:
+      - moa-network
+
+  vikunja-db:
+    image: postgres:15-alpine
+    container_name: vikunja-db
+    restart: unless-stopped
+    volumes:
+      - vikunja_db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=vikunja
+      - POSTGRES_PASSWORD=${VIKUNJA_DB_PASSWORD:-vikunja}
+      - POSTGRES_DB=vikunja
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vikunja -d vikunja"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moa-network
+
+  # ===========================================================================
+  # BOOKSTACK - Documentation & Wiki
+  # ===========================================================================
+  bookstack:
+    image: linuxserver/bookstack:latest
+    container_name: bookstack
+    restart: unless-stopped
+    user: "0:0"
+    # Port désactivé : accessible uniquement via Caddy reverse proxy
+    # ports:
+    #   - "6875:80"
+    volumes:
+      - bookstack_config:/config
+      - bookstack_uploads:/var/www/html/uploads
+      - bookstack_storage:/var/www/html/storage
+      - bookstack_public:/var/www/html/public
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${BOOKSTACK_TIMEZONE:-Europe/Paris}
+      - APP_URL=${BOOKSTACK_APP_URL:-https://bookstack.localhost}
+      - APP_KEY=${BOOKSTACK_APP_KEY:-}
+      - DB_HOST=bookstack-db
+      - DB_PORT=3306
+      - DB_DATABASE=${BOOKSTACK_DB_NAME:-bookstack}
+      - DB_USERNAME=${BOOKSTACK_DB_USER:-bookstack}
+      - DB_PASSWORD=${BOOKSTACK_DB_PASSWORD:-bookstack}
+    depends_on:
+      bookstack-db:
+        condition: service_healthy
+    networks:
+      - moa-network
+
+  bookstack-db:
+    image: mariadb:10.6
+    container_name: bookstack-db
+    restart: unless-stopped
+    volumes:
+      - bookstack_db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${BOOKSTACK_ROOT_PASSWORD:-rootpassword}
+      - MYSQL_DATABASE=${BOOKSTACK_DB_NAME:-bookstack}
+      - MYSQL_USER=${BOOKSTACK_DB_USER:-bookstack}
+      - MYSQL_PASSWORD=${BOOKSTACK_DB_PASSWORD:-bookstack}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=${BOOKSTACK_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - moa-network
+
+  bookstack-mcp:
+    build:
+      context: ./bookstack/mcp-server
+      dockerfile: Dockerfile
+    container_name: bookstack-mcp
+    restart: unless-stopped
+    # Port désactivé : accessible uniquement via Caddy reverse proxy ou directement sur le réseau moa-network
+    # ports:
+    #   - "3002:3002"
+    environment:
+      - BOOKSTACK_BASE_URL=${BOOKSTACK_MCP_BASE_URL:-http://bookstack:80/api}
+      - BOOKSTACK_API_TOKEN=${BOOKSTACK_MCP_API_TOKEN:-}
+      - MCP_AUTH_TOKEN=${BOOKSTACK_MCP_AUTH_TOKEN:-}
+      - MCP_TRANSPORT=${BOOKSTACK_MCP_TRANSPORT:-http}
+      - SERVER_PORT=3002
+    depends_on:
+      bookstack:
+        condition: service_started
+    networks:
+      - moa-network
+
+  # ===========================================================================
+  # DIRECTUS - Gestion de données
+  # ===========================================================================
+  directus:
+    image: directus/directus:latest
+    container_name: directus
+    restart: unless-stopped
+    # Port désactivé : accessible uniquement via Caddy reverse proxy
+    # ports:
+    #   - "8055:8055"
+    environment:
+      - KEY=${DIRECTUS_KEY}
+      - SECRET=${DIRECTUS_SECRET}
+      - DB_CLIENT=pg
+      - DB_HOST=directus-db
+      - DB_PORT=5432
+      - DB_DATABASE=${DIRECTUS_DB_DATABASE}
+      - DB_USER=${DIRECTUS_DB_USER}
+      - DB_PASSWORD=${DIRECTUS_DB_PASSWORD}
+      - ADMIN_EMAIL=${DIRECTUS_ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${DIRECTUS_ADMIN_PASSWORD}
+      - PUBLIC_URL=${DIRECTUS_PUBLIC_URL:-https://directus.localhost}
+      - EXTENSIONS_MCP_ENABLED=${EXTENSIONS_MCP_ENABLED}
+      - MCP_OAUTH_ENABLED=${MCP_OAUTH_ENABLED}
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    depends_on:
+      - directus-db
+    networks:
+      - moa-network
+
+  directus-db:
+    image: postgres:15-alpine
+    container_name: directus-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DIRECTUS_DB_DATABASE}
+      - POSTGRES_USER=${DIRECTUS_DB_USER}
+      - POSTGRES_PASSWORD=${DIRECTUS_DB_PASSWORD}
+    volumes:
+      - directus_data:/var/lib/postgresql/data
+    networks:
+      - moa-network
+
+  # ===========================================================================
+  # FORGEJO - Gestion de code (Gitea fork)
+  # ===========================================================================
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:8.0.1
+    container_name: forgejo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:2223:22"     # SSH port (doit rester exposé)
+    # HTTP port désactivé : accessible uniquement via Caddy reverse proxy
+    # ports:
+    #   - "127.0.0.1:3001:3000"  # HTTP interface
+    volumes:
+      - forgejo_data:/var/lib/gitea
+      - forgejo_config:/etc/gitea
+      - forgejo_ssh:/home/git/.ssh
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - GITEA_WORK_DIR=/var/lib/gitea
+      - GITEA__server__DOMAIN=forgejo.localhost
+      - GITEA__server__SSH_DOMAIN=git.moa.local
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__ROOT_URL=https://forgejo.localhost/
+      - GITEA__server__SSH_PORT=22
+      - GITEA__service__DISABLE_REGISTRATION=false
+      - GITEA__service__REQUIRE_SIGNIN_VIEW=false
+    networks:
+      - moa-network
+    labels:
+      - "traefik.enable=false"
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  # Caddy
+  caddy_data:
+  caddy_config:
+
+  # Vikunja
+  vikunja_db_data:
+
+  # BookStack
+  bookstack_db_data:
+  bookstack_config:
+  bookstack_uploads:
+  bookstack_storage:
+  bookstack_public:
+
+  # Directus
+  directus_uploads:
+  directus_extensions:
+  directus_data:
+
+  # Forgejo
+  forgejo_data:
+    driver: local
+  forgejo_config:
+    driver: local
+  forgejo_ssh:
+    driver: local
+
+# =============================================================================
+# RÉSEAU
+# =============================================================================
+networks:
+  moa-network:
+    external: true
+    name: moa-network

@@ -1,0 +1,60 @@
+# MOA - Caddy Reverse Proxy Configuration
+# Phase 1.5 - Développement local avec certificats auto-signés
+
+# =============================================================================
+# Vikunja - Gestionnaire de tâches
+# =============================================================================
+vikunja.localhost, vikunja.moa.local {
+    reverse_proxy vikunja:3456
+}
+
+# =============================================================================
+# BookStack - Documentation & Wiki
+# =============================================================================
+bookstack.localhost, bookstack.moa.local {
+    reverse_proxy bookstack:80
+}
+
+# =============================================================================
+# Directus - Gestion de données
+# =============================================================================
+directus.localhost, directus.moa.local {
+    reverse_proxy directus:8055
+}
+
+# =============================================================================
+# Forgejo - Gestion de code (Gitea fork)
+# =============================================================================
+forgejo.localhost, forgejo.moa.local, git.moa.local {
+    reverse_proxy forgejo:3000
+}
+
+# =============================================================================
+# Redirection HTTP → HTTPS avec certificats auto-signés
+# =============================================================================
+:80 {
+    # Redirige vers HTTPS
+    redir https://{host}{uri} permanent
+}
+
+:443 {
+    # Configuration par défaut pour tous les hôtes
+    # Caddy générera automatiquement des certificats auto-signés pour les hôtes locaux
+    respond "Bienvenue sur la stack MOA. Utilisez un nom d'hôte valide (vikunja.localhost, bookstack.localhost, etc.)"
+}
+
+# =============================================================================
+# Configuration pour production (à activer quand vous avez un vrai domaine)
+# =============================================================================
+# Pour utiliser avec Let's Encrypt, remplacez simplement les noms d'hôte ci-dessus
+# par vos vrais domaines, par exemple :
+#
+# vikunja.moa.yourdomain.com {
+#     reverse_proxy vikunja:3456
+# }
+#
+# bookstack.moa.yourdomain.com {
+#     reverse_proxy bookstack:80
+# }
+#
+# Caddy obtiendra et renouvellera automatiquement les certificats Let's Encrypt

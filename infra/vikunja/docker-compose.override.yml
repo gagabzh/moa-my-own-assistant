@@ -1,0 +1,21 @@
+# Configuration de développement pour Vikunja
+# Ce fichier est optionnel et permet de personnaliser la configuration
+# pour le développement local sans modifier le fichier principal
+
+version: '3.8'
+
+services:
+  vikunja:
+    # Montage du code source pour le développement (optionnel)
+    # volumes:
+    #   - ./custom-config:/etc/vikunja
+    ports:
+      - "3456:3456"
+    environment:
+      # Activer les logs détaillés en développement
+      - VIKUNJA_SERVICE_LOGLEVEL=debug
+      
+  vikunja-db:
+    # Ports désactivés pour la sécurité (BD interne uniquement)
+    # ports:
+    #   - "5432:5432"

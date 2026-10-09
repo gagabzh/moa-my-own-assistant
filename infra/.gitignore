@@ -1,0 +1,53 @@
+# Ignorer les fichiers générés par Docker
+*.env.local
+.env.*.local
+
+# Fichier de configuration global (contient des secrets)
+.env.global
+
+# Ignorer les volumes Docker
+vikunja_files/
+vikunja_db_data/
+bookstack_db_data/
+bookstack_config/
+bookstack_uploads/
+bookstack_storage/
+bookstack_public/
+directus_uploads/
+directus_extensions/
+directus_data/
+forgejo_data/
+forgejo_config/
+forgejo_ssh/
+caddy_data/
+caddy_config/
+
+# Ignorer les données des services
+*/data/
+
+# Fichiers temporaires
+*.tmp
+*.swp
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Fichiers de build
+*.pyc
+__pycache__/
+
+# Certificats et clés
+*.pem
+*.crt
+*.key

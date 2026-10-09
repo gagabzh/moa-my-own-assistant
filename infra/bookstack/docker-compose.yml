@@ -1,8 +1,11 @@
+version: '3.8'
+
 services:
   bookstack:
     image: linuxserver/bookstack:latest
     container_name: bookstack
     restart: unless-stopped
+    user: "0:0"
     ports:
       - "6875:80"
     volumes:
@@ -25,7 +28,7 @@ services:
       bookstack-db:
         condition: service_healthy
     networks:
-      - bookstack-network
+      - moa-network
 
   bookstack-db:
     image: mariadb:10.6
@@ -44,7 +47,27 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - bookstack-network
+      - moa-network
+
+  bookstack-mcp:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: bookstack-mcp
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - BOOKSTACK_BASE_URL=${BOOKSTACK_MCP_BASE_URL:-http://bookstack:80/api}
+      - BOOKSTACK_API_TOKEN=${BOOKSTACK_MCP_API_TOKEN:-}
+      - MCP_AUTH_TOKEN=${BOOKSTACK_MCP_AUTH_TOKEN:-}
+      - MCP_TRANSPORT=${BOOKSTACK_MCP_TRANSPORT:-http}
+      - SERVER_PORT=3002
+    depends_on:
+      bookstack:
+        condition: service_started
+    networks:
+      - moa-network
 
 volumes:
   bookstack_db_data:
@@ -54,5 +77,6 @@ volumes:
   bookstack_public:
 
 networks:
-  bookstack-network:
-    driver: bridge
+  moa-network:
+    external: true
+    name: moa-network

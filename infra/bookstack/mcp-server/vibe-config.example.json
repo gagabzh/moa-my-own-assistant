@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "bookstack": {
+      "command": "bunx",
+      "args": ["pnocera/bookstack-mcp-server"],
+      "env": {
+        "BOOKSTACK_BASE_URL": "http://localhost:6875/api",
+        "BOOKSTACK_API_TOKEN": "cb226ee78ddbd5834779835113e5d626:9ad2c132e691503a40674b748bce63031a0f2bb39d3a293e2abbd36c3f0dc302",
+        "MCP_TRANSPORT": "stdio",
+        "MCP_AUTH_TOKEN": "votre_token_mcp_32_chars_generé_par_openssl"
+      }
+    }
+  }
+}

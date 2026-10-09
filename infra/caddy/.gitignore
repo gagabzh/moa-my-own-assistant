@@ -1,0 +1,16 @@
+# Caddy
+/caddy_data/
+/caddy_config/
+
+# Fichiers de configuration locaux
+.env
+.env.local
+
+# Logs et temporaires
+*.log
+*.tmp
+
+# Certificats (générés automatiquement)
+*.pem
+*.crt
+*.key

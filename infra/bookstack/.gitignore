@@ -1,9 +1,18 @@
 # Ignore locally generated files
 .env
 .env.local
+CREDENTIALS.md
 
 # Ignore Docker override files that may contain secrets
 docker-compose.override.yml
+
+# MCP Server
+mcp-server/node_modules/
+mcp-server/.bun/
+
+# Docker build cache
+**/node_modules/
+**/.bun/
 
 # Ignore data directories
 /data/
