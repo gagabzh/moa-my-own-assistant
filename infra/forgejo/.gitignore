@@ -1,0 +1,22 @@
+# Local Forgejo configuration
+.env
+.env.local
+.env.*.local
+
+# Docker override files
+docker-compose.override.yml
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Backup files
+backup/
+*.tar.gz
+*.zip
+
+# Local scripts
+*.sh.local
+
+# Docker build cache
+.cache/
