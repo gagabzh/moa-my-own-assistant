@@ -1,0 +1,27 @@
+# Ignore locally generated files
+.env
+.env.local
+
+# Ignore Docker override files that may contain secrets
+docker-compose.override.yml
+
+# Ignore data directories
+/data/
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.swp
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore backup files
+*.sql
+*.bak
+*.backup
