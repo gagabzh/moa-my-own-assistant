@@ -9,13 +9,13 @@ services:
       - "127.0.0.1:3001:3000"  # HTTP interface (3001 to avoid conflict with bookstack)
       - "127.0.0.1:2223:22"     # SSH port (mapped to 2223 to avoid conflict)
     volumes:
-      - forgejo_data:/data
+      - forgejo_data:/var/lib/gitea
       - forgejo_config:/etc/gitea
       - forgejo_ssh:/home/git/.ssh
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - USER=git
+      - GITEA_WORK_DIR=/var/lib/gitea
       - GITEA__server__DOMAIN=localhost
       - GITEA__server__SSH_DOMAIN=localhost
       - GITEA__server__HTTP_PORT=3000
@@ -23,7 +23,6 @@ services:
       - GITEA__server__SSH_PORT=22
       - GITEA__service__DISABLE_REGISTRATION=false
       - GITEA__service__REQUIRE_SIGNIN_VIEW=false
-      - GITEA__repository__ROOT=/data
     networks:
       - forgejo_network
     labels:
